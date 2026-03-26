@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StayWithTrend — Live Calls</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060910;
+    --surface: #0d1520;
+    --surface2: #111d2e;
+    --border: #1a2d45;
+    --accent: #00c9a7;
+    --gold: #f5a623;
+    --red: #ff4d6d;
+    --blue: #4d9fff;
+    --purple: #b47cff;
+    --text: #e8f0fe;
+    --muted: #4a6a8a;
+    --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--mono); font-size: 13px; min-height: 100vh; }
+
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+  .logo { font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1rem; }
+  .logo span { color: var(--accent); }
+  .header-right { display: flex; align-items: center; gap: 14px; font-size: 0.7rem; color: var(--muted); }
+  .live-dot { display: inline-block; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; margin-right: 5px; animation: blink 1.4s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  .stats-row { display: flex; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .stat { flex: 1; padding: 8px 14px; border-right: 1px solid var(--border); text-align: center; }
+  .stat:last-child { border-right: none; }
+  .stat-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .stat-val { font-size: 1.1rem; font-weight: 600; margin-top: 2px; }
+  .stat-val.blue  { color: var(--blue); }
+  .stat-val.green { color: var(--accent); }
+  .stat-val.gold  { color: var(--gold); }
+  .stat-val.red   { color: var(--red); }
+
+  /* TOOLBAR — two rows */
+  .toolbar { background: var(--surface); border-bottom: 1px solid var(--border); }
+  .toolbar-row { display: flex; align-items: center; gap: 6px; padding: 7px 12px; flex-wrap: wrap; }
+  .toolbar-row + .toolbar-row { border-top: 1px solid rgba(26,45,69,0.5); }
+
+  .row-label { font-size: 0.6rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-right: 4px; min-width: 44px; }
+
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-size: 0.7rem;
+    font-family: var(--mono);
+    cursor: pointer;
+    transition: all 0.12s;
+    letter-spacing: 0.5px;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Type filters */
+  .filter-btn.type-active  { background: var(--accent);  border-color: var(--accent);  color: #060910; font-weight: 600; }
+  /* Status filters — each has its own active color */
+  .filter-btn.sa-active   { background: var(--accent);  border-color: var(--accent);  color: #060910; font-weight: 600; }
+  .filter-btn.sa-partial  { background: var(--gold);    border-color: var(--gold);    color: #060910; font-weight: 600; }
+  .filter-btn.sa-trail    { background: var(--purple);  border-color: var(--purple);  color: #060910; font-weight: 600; }
+  .filter-btn.sa-closed   { background: #00a88d;        border-color: #00a88d;        color: #060910; font-weight: 600; }
+  .filter-btn.sa-sl       { background: var(--red);     border-color: var(--red);     color: #fff;    font-weight: 600; }
+  .filter-btn.sa-all      { background: var(--blue);    border-color: var(--blue);    color: #060910; font-weight: 600; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 700px; }
+  thead tr { background: var(--surface2); border-bottom: 2px solid var(--border); }
+  th { padding: 8px 12px; text-align: left; font-size: 0.65rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--muted); font-weight: 600; white-space: nowrap; border-right: 1px solid var(--border); }
+  th:last-child { border-right: none; }
+  tbody tr { border-bottom: 1px solid rgba(26,45,69,0.6); transition: background 0.1s; }
+  tbody tr:hover { background: rgba(0,201,167,0.03); }
+  td { padding: 7px 12px; font-size: 0.78rem; border-right: 1px solid rgba(26,45,69,0.4); white-space: nowrap; }
+  td:last-child { border-right: none; }
+
+  .stock-name { font-weight: 600; font-size: 0.82rem; color: var(--text); }
+  .type-pill  { display: inline-block; padding: 2px 7px; border-radius: 3px; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; }
+  .t-intraday { background: rgba(77,159,255,0.1);  color: var(--blue); }
+  .t-swing    { background: rgba(180,124,255,0.1); color: var(--purple); }
+  .t-longterm { background: rgba(245,166,35,0.1);  color: var(--gold); }
+
+  .status-pill { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.5px; }
+  .s-active  { background: rgba(0,201,167,0.1);  color: var(--accent); }
+  .s-partial { background: rgba(245,166,35,0.1); color: var(--gold); }
+  .s-trail   { background: rgba(180,124,255,0.1);color: var(--purple); }
+  .s-closed  { background: rgba(0,201,167,0.07); color: #00a88d; }
+  .s-sl      { background: rgba(255,77,109,0.1); color: var(--red); }
+
+  .p-buy { color: var(--accent); font-weight: 500; }
+  .p-dip { color: var(--blue); }
+  .p-sl  { color: var(--red); }
+  .p-cmp { color: var(--text); }
+  .p-na  { color: var(--muted); }
+  .notes-cell { color: #c9a05a; font-style: italic; font-size: 0.72rem; max-width: 200px; overflow: hidden; text-overflow: ellipsis; }
+  .date-cell  { color: var(--muted); font-size: 0.72rem; }
+
+  .msg-row td { text-align: center; padding: 40px; color: var(--muted); }
+  .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .setup-bar { background: rgba(245,166,35,0.08); border-bottom: 1px solid rgba(245,166,35,0.2); padding: 7px 16px; font-size: 0.7rem; color: var(--gold); display: none; }
+  .setup-bar.on { display: block; }
+  footer { padding: 10px 16px; font-size: 0.65rem; color: var(--muted); border-top: 1px solid var(--border); text-align: center; letter-spacing: 0.5px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Stay<span>WithTrend</span></div>
+  <div class="header-right">
+    <span><span class="live-dot"></span>LIVE</span>
+    <span id="lastUpdated">—</span>
+  </div>
+</header>
+
+<div class="stats-row">
+  <div class="stat"><div class="stat-label">Total</div><div class="stat-val blue"  id="sTotal">—</div></div>
+  <div class="stat"><div class="stat-label">Active</div><div class="stat-val green" id="sActive">—</div></div>
+  <div class="stat"><div class="stat-label">Closed ✓</div><div class="stat-val gold"  id="sProfit">—</div></div>
+  <div class="stat"><div class="stat-label">SL Hit</div><div class="stat-val red"   id="sLoss">—</div></div>
+</div>
+
+<div class="setup-bar" id="setupBar">
+  ⚠ DEMO MODE — Replace YOUR_GOOGLE_SHEET_CSV_URL_HERE in the code with your Google Sheet CSV link.
+</div>
+
+<div class="toolbar">
+  <!-- Row 1: Type filter -->
+  <div class="toolbar-row">
+    <span class="row-label">Type</span>
+    <button class="filter-btn type-active" onclick="setType('all',this)">All</button>
+    <button class="filter-btn" onclick="setType('intraday',this)">Intraday</button>
+    <button class="filter-btn" onclick="setType('swing',this)">Swing</button>
+    <button class="filter-btn" onclick="setType('longterm',this)">Long Term</button>
+  </div>
+  <!-- Row 2: Status filter -->
+  <div class="toolbar-row">
+    <span class="row-label">Status</span>
+    <button class="filter-btn sa-all"     onclick="setStatus('all',this)">All</button>
+    <button class="filter-btn"            onclick="setStatus('active',this)">● Active</button>
+    <button class="filter-btn"            onclick="setStatus('book partial',this)">◑ Book Partial</button>
+    <button class="filter-btn"            onclick="setStatus('trail to sl',this)">↑ Trail to SL</button>
+    <button class="filter-btn"            onclick="setStatus('closed',this)">✓ Closed</button>
+    <button class="filter-btn"            onclick="setStatus('sl hit',this)">✕ SL Hit</button>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Stock</th>
+        <th>Type</th>
+        <th>Buy Price</th>
+        <th>Dip / Add-on</th>
+        <th>Stop Loss</th>
+        <th>CMP</th>
+        <th>Status</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody">
+      <tr class="msg-row"><td colspan="9"><span class="spinner"></span>Loading...</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<footer>StayWithTrend · Live Calls · Not SEBI Registered · For Educational Purposes Only</footer>
+
+<script>
+  // ══════════════════════════════════════════
+  // PASTE YOUR GOOGLE SHEET CSV URL BELOW
+  // ══════════════════════════════════════════
+  const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vT1SWyA9Vs3il1UiDfYD6u8H_IW9o5frwEQflJwCO5obkDoKu8cWkUzeMK3fdjfhjYW7TF_hWWE-ki7/pubhtml';
+  // ══════════════════════════════════════════
+
+  let allCalls = [];
+  let currentType   = 'all';
+  let currentStatus = 'all';
+
+  const STATUS_MAP = {
+    'active':       { label: '● Active',       cls: 's-active',  activeCls: 'sa-active'  },
+    'book partial': { label: '◑ Book Partial', cls: 's-partial', activeCls: 'sa-partial' },
+    'trail to sl':  { label: '↑ Trail to SL',  cls: 's-trail',   activeCls: 'sa-trail'   },
+    'closed':       { label: '✓ Closed',        cls: 's-closed',  activeCls: 'sa-closed'  },
+    'sl hit':       { label: '✕ SL Hit',        cls: 's-sl',      activeCls: 'sa-sl'      },
+  };
+
+  function statusInfo(raw) {
+    return STATUS_MAP[(raw||'').toLowerCase().trim()] || { label: raw, cls: 's-active', activeCls: 'sa-active' };
+  }
+  function typeClass(t) {
+    t = (t||'').toLowerCase();
+    if (t==='intraday')      return 't-intraday';
+    if (t==='swing')         return 't-swing';
+    if (t.includes('long'))  return 't-longterm';
+    return 't-swing';
+  }
+  function price(val) {
+    if (!val || val==='-' || val==='') return `<span class="p-na">—</span>`;
+    return `₹${val}`;
+  }
+  function parseCSV(text) {
+    const lines = text.trim().split('\n');
+    if (lines.length < 2) return [];
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/\r/g,''));
+    return lines.slice(1).map(line => {
+      const vals = line.split(',').map(v => v.trim().replace(/\r/g,''));
+      const obj = {};
+      headers.forEach((h,i) => obj[h] = vals[i]||'');
+      return obj;
+    }).filter(r => r['stock'] && r['stock'].length > 0);
+  }
+
+  function renderTable() {
+    let filtered = allCalls;
+    if (currentType !== 'all')
+      filtered = filtered.filter(c => (c['type']||'').toLowerCase().includes(currentType));
+    if (currentStatus !== 'all')
+      filtered = filtered.filter(c => (c['status']||'').toLowerCase().trim() === currentStatus);
+
+    const tbody = document.getElementById('tableBody');
+    if (filtered.length === 0) {
+      tbody.innerHTML = `<tr class="msg-row"><td colspan="9">No calls found</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = filtered.map(c => {
+      const si = statusInfo(c['status']);
+      const tc = typeClass(c['type']);
+      return `<tr>
+        <td class="date-cell">${c['date']||'—'}</td>
+        <td class="stock-name">${(c['stock']||'').toUpperCase()}</td>
+        <td><span class="type-pill ${tc}">${c['type']||''}</span></td>
+        <td class="p-buy">${price(c['buy price']||c['buy'])}</td>
+        <td class="p-dip">${price(c['dip price']||c['dip'])}</td>
+        <td class="p-sl">${price(c['stop loss']||c['sl'])}</td>
+        <td class="p-cmp">${price(c['cmp'])}</td>
+        <td><span class="status-pill ${si.cls}">${si.label}</span></td>
+        <td class="notes-cell" title="${c['notes']||''}">${c['notes']||'—'}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function updateStats(calls) {
+    document.getElementById('sTotal').textContent  = calls.length;
+    document.getElementById('sActive').textContent = calls.filter(c => ['active','book partial','trail to sl'].includes((c['status']||'').toLowerCase().trim())).length;
+    document.getElementById('sProfit').textContent = calls.filter(c => (c['status']||'').toLowerCase().trim()==='closed').length;
+    document.getElementById('sLoss').textContent   = calls.filter(c => (c['status']||'').toLowerCase().trim()==='sl hit').length;
+  }
+
+  function setType(f, btn) {
+    currentType = f;
+    document.querySelectorAll('.toolbar-row:first-child .filter-btn').forEach(b => b.classList.remove('type-active'));
+    btn.classList.add('type-active');
+    renderTable();
+  }
+
+  function setStatus(f, btn) {
+    currentStatus = f;
+    // Remove all status active classes
+    document.querySelectorAll('.toolbar-row:last-child .filter-btn').forEach(b => {
+      b.classList.remove('sa-all','sa-active','sa-partial','sa-trail','sa-closed','sa-sl');
+    });
+    // Add the right one
+    if (f === 'all') btn.classList.add('sa-all');
+    else btn.classList.add(statusInfo(f).activeCls);
+    renderTable();
+  }
+
+  function demoData() {
+    return [
+      { date:'26-Mar', stock:'RELIANCE',   type:'Swing',    'buy price':'1250', 'dip price':'1220', 'stop loss':'1190', cmp:'1268', status:'Active',       notes:'Book 30% at 1300, trail rest' },
+      { date:'26-Mar', stock:'HDFCBANK',   type:'Intraday', 'buy price':'1680', 'dip price':'',     'stop loss':'1655', cmp:'1695', status:'Book Partial',  notes:'Book 30% done, trail to SL' },
+      { date:'25-Mar', stock:'TCS',        type:'LongTerm', 'buy price':'3850', 'dip price':'3780', 'stop loss':'3700', cmp:'3920', status:'Trail to SL',   notes:'Move SL to 3800' },
+      { date:'24-Mar', stock:'INFY',       type:'Swing',    'buy price':'1420', 'dip price':'',     'stop loss':'1385', cmp:'1465', status:'Closed',        notes:'Target achieved' },
+      { date:'23-Mar', stock:'TATAMOTORS', type:'Intraday', 'buy price':'920',  'dip price':'905',  'stop loss':'888',  cmp:'885',  status:'SL Hit',        notes:'' },
+      { date:'22-Mar', stock:'WIPRO',      type:'Swing',    'buy price':'480',  'dip price':'465',  'stop loss':'450',  cmp:'492',  status:'Active',        notes:'Trail SL to 468' },
+    ];
+  }
+
+  async function loadData() {
+    if (SHEET_CSV_URL === 'YOUR_GOOGLE_SHEET_CSV_URL_HERE') {
+      document.getElementById('setupBar').classList.add('on');
+      allCalls = demoData();
+      updateStats(allCalls);
+      renderTable();
+      document.getElementById('lastUpdated').textContent = 'DEMO';
+      return;
+    }
+    try {
+      const res = await fetch(SHEET_CSV_URL + '&t=' + Date.now());
+      const text = await res.text();
+      allCalls = parseCSV(text);
+      updateStats(allCalls);
+      renderTable();
+      const now = new Date();
+      document.getElementById('lastUpdated').textContent = now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    } catch(e) {
+      document.getElementById('tableBody').innerHTML = `<tr class="msg-row"><td colspan="9">Could not load data. Check Sheet URL.</td></tr>`;
+    }
+  }
+
+  loadData();
+  setInterval(loadData, 5 * 60 * 1000);
+</script>
+</body>
+</html>

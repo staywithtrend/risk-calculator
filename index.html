@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TradeGuard — Risk Management Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e17;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1f2d45;
+    --accent: #f0a500;
+    --accent2: #e05c5c;
+    --green: #22c97a;
+    --text: #e8edf5;
+    --muted: #6b7fa3;
+    --card-glow: 0 0 40px rgba(240,165,0,0.06);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(240,165,0,0.08) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 39px, rgba(255,255,255,0.015) 40px),
+      repeating-linear-gradient(90deg, transparent, transparent 39px, rgba(255,255,255,0.015) 40px);
+  }
+
+  header {
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(10,14,23,0.9);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .logo-icon {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem;
+  }
+
+  .logo span { color: var(--accent); }
+
+  .tagline {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  h1 {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  h1 span { color: var(--accent); }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 1rem;
+    margin-bottom: 48px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 700px) {
+    .grid { grid-template-columns: 1fr; }
+    header { padding: 18px 20px; }
+    main { padding: 32px 16px 60px; }
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    box-shadow: var(--card-glow);
+    transition: border-color 0.2s;
+  }
+
+  .card:hover { border-color: rgba(240,165,0,0.2); }
+
+  .card-title {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .field { margin-bottom: 18px; }
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 0.82rem;
+    color: var(--muted);
+    margin-bottom: 7px;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+  }
+
+  label .hint {
+    font-weight: 400;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: rgba(107,127,163,0.7);
+    margin-left: 6px;
+  }
+
+  input, select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-size: 1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(240,165,0,0.1);
+  }
+
+  input::placeholder { color: rgba(107,127,163,0.5); }
+
+  select option { background: var(--surface2); }
+
+  .input-prefix {
+    position: relative;
+  }
+
+  .input-prefix .prefix {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    pointer-events: none;
+  }
+
+  .input-prefix input { padding-left: 32px; }
+
+  .btn {
+    width: 100%;
+    background: var(--accent);
+    color: #0a0e17;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 1rem;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, transform 0.1s, box-shadow 0.2s;
+    box-shadow: 0 4px 20px rgba(240,165,0,0.25);
+    margin-top: 8px;
+  }
+
+  .btn:hover {
+    background: #ffb820;
+    box-shadow: 0 6px 28px rgba(240,165,0,0.4);
+    transform: translateY(-1px);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .results-card {
+    grid-column: 1 / -1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    display: none;
+  }
+
+  .results-card.visible { display: block; animation: fadeIn 0.4s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-title {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--green);
+    margin-bottom: 24px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .metric {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: 0.5;
+  }
+
+  .metric.highlight::before { background: var(--green); opacity: 1; }
+  .metric.danger::before { background: var(--accent2); opacity: 1; }
+
+  .metric-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .metric.highlight .metric-value { color: var(--green); }
+  .metric.danger .metric-value { color: var(--accent2); }
+
+  .metric-sub {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .breakdown {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+
+  .breakdown-title {
+    font-size: 0.72rem;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 16px;
+  }
+
+  .breakdown-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(31,45,69,0.7);
+    font-size: 0.88rem;
+  }
+
+  .breakdown-row:last-child { border-bottom: none; }
+
+  .breakdown-row .key { color: var(--muted); }
+  .breakdown-row .val {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .breakdown-row .val.green { color: var(--green); }
+  .breakdown-row .val.red { color: var(--accent2); }
+  .breakdown-row .val.gold { color: var(--accent); }
+
+  .warning-box {
+    background: rgba(224,92,92,0.08);
+    border: 1px solid rgba(224,92,92,0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.83rem;
+    color: #f09090;
+    margin-top: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    display: none;
+  }
+
+  .warning-box.visible { display: block; }
+
+  .reset-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-top: 20px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+
+  .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .risk-bar-container {
+    margin-top: 20px;
+  }
+
+  .risk-bar-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .risk-bar-track {
+    background: var(--surface2);
+    border-radius: 100px;
+    height: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .risk-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: linear-gradient(90deg, var(--green), var(--accent));
+  }
+
+  .risk-bar-fill.over { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+  footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-family: 'JetBrains Mono', monospace;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    Trade<span>Guard</span>
+  </div>
+  <div class="tagline">// POSITION SIZE CALCULATOR</div>
+</header>
+
+<main>
+  <h1>Know Your Risk<br><span>Before You Trade</span></h1>
+  <p class="subtitle">// Enter trade details → get exact quantity to buy</p>
+
+  <div class="grid">
+
+    <!-- Capital Card -->
+    <div class="card">
+      <div class="card-title">// 01 · Your Capital</div>
+
+      <div class="field">
+        <label>Total Trading Capital <span class="hint">(your full account size)</span></label>
+        <div class="input-prefix">
+          <span class="prefix">₹</span>
+          <input type="number" id="capital" placeholder="100000" min="1">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Risk Per Trade <span class="hint">(% of capital you're willing to lose)</span></label>
+        <select id="riskPercent">
+          <option value="0.25">0.25% — Ultra Conservative</option>
+          <option value="0.5">0.5% — Conservative</option>
+          <option value="1" selected>1% — Standard</option>
+          <option value="1.5">1.5% — Moderate</option>
+          <option value="2">2% — Aggressive</option>
+          <option value="custom">Custom %</option>
+        </select>
+      </div>
+
+      <div class="field" id="customRiskField" style="display:none;">
+        <label>Custom Risk % <span class="hint">(type your own)</span></label>
+        <input type="number" id="customRisk" placeholder="e.g. 0.75" min="0.1" max="10" step="0.1">
+      </div>
+    </div>
+
+    <!-- Trade Details Card -->
+    <div class="card">
+      <div class="card-title">// 02 · Trade Details</div>
+
+      <div class="field">
+        <label>Stock CMP <span class="hint">(current market price)</span></label>
+        <div class="input-prefix">
+          <span class="prefix">₹</span>
+          <input type="number" id="cmp" placeholder="500.00" min="0.01" step="0.01">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Add-on / Dip Buy Price <span class="hint">(optional second entry)</span></label>
+        <div class="input-prefix">
+          <span class="prefix">₹</span>
+          <input type="number" id="dip" placeholder="480.00" min="0.01" step="0.01">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Stop Loss Price <span class="hint">(where you exit if wrong)</span></label>
+        <div class="input-prefix">
+          <span class="prefix">₹</span>
+          <input type="number" id="sl" placeholder="460.00" min="0.01" step="0.01">
+        </div>
+      </div>
+    </div>
+
+    <!-- Calculate Button -->
+    <div class="card" style="grid-column: 1 / -1; padding: 20px 28px;">
+      <button class="btn" onclick="calculate()">⚡ Calculate Position Size</button>
+    </div>
+
+    <!-- Results -->
+    <div class="results-card" id="results">
+      <div class="results-title">// RESULTS — POSITION SIZING BREAKDOWN</div>
+
+      <div class="metrics" id="metricsGrid"></div>
+
+      <div class="breakdown">
+        <div class="breakdown-title">// Trade Summary</div>
+        <div id="breakdownRows"></div>
+      </div>
+
+      <div class="risk-bar-container">
+        <div class="risk-bar-label">// Capital At Risk</div>
+        <div class="risk-bar-track">
+          <div class="risk-bar-fill" id="riskBarFill" style="width:0%"></div>
+        </div>
+      </div>
+
+      <div class="warning-box" id="warningBox"></div>
+
+      <button class="reset-btn" onclick="reset()">↺ Reset Calculator</button>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  Built for traders who respect their capital · Not financial advice
+</footer>
+
+<script>
+  document.getElementById('riskPercent').addEventListener('change', function() {
+    document.getElementById('customRiskField').style.display =
+      this.value === 'custom' ? 'block' : 'none';
+  });
+
+  function getRiskPercent() {
+    const sel = document.getElementById('riskPercent').value;
+    if (sel === 'custom') {
+      return parseFloat(document.getElementById('customRisk').value) || 0;
+    }
+    return parseFloat(sel);
+  }
+
+  function fmt(n, decimals = 2) {
+    return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  }
+
+  function fmtNum(n) {
+    return n.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+  }
+
+  function calculate() {
+    const capital = parseFloat(document.getElementById('capital').value);
+    const cmp = parseFloat(document.getElementById('cmp').value);
+    const dipRaw = document.getElementById('dip').value;
+    const dip = dipRaw ? parseFloat(dipRaw) : null;
+    const sl = parseFloat(document.getElementById('sl').value);
+    const riskPct = getRiskPercent();
+
+    if (!capital || !cmp || !sl || !riskPct) {
+      alert('Please fill in: Capital, CMP, Stop Loss, and Risk %');
+      return;
+    }
+
+    if (sl >= cmp) {
+      alert('Stop Loss must be BELOW the CMP (for a buy trade). Please check your values.');
+      return;
+    }
+
+    if (dip && dip >= cmp) {
+      alert('Add-on / Dip price should be below CMP.');
+      return;
+    }
+
+    const riskAmount = (riskPct / 100) * capital;
+
+    // Entry 1: CMP
+    const slDistanceCMP = cmp - sl;
+    const slPctCMP = (slDistanceCMP / cmp) * 100;
+    const qtyCMP = Math.floor(riskAmount / slDistanceCMP);
+    const investmentCMP = qtyCMP * cmp;
+
+    let results = {
+      entry1: {
+        price: cmp,
+        qty: qtyCMP,
+        investment: investmentCMP,
+        slDist: slDistanceCMP,
+        slPct: slPctCMP,
+        actualRisk: qtyCMP * slDistanceCMP
+      },
+      entry2: null
+    };
+
+    // Entry 2: Dip (optional)
+    if (dip && dip > sl) {
+      const slDistanceDip = dip - sl;
+      const slPctDip = (slDistanceDip / dip) * 100;
+      const qtyDip = Math.floor(riskAmount / slDistanceDip);
+      const investmentDip = qtyDip * dip;
+      results.entry2 = {
+        price: dip,
+        qty: qtyDip,
+        investment: investmentDip,
+        slDist: slDistanceDip,
+        slPct: slPctDip,
+        actualRisk: qtyDip * slDistanceDip
+      };
+    }
+
+    renderResults(results, capital, riskPct, riskAmount, sl, dip);
+  }
+
+  function renderResults(r, capital, riskPct, riskAmount, sl, dip) {
+    const e1 = r.entry1;
+    const e2 = r.entry2;
+
+    // Metrics
+    let metricsHTML = `
+      <div class="metric highlight">
+        <div class="metric-label">Entry 1 Qty</div>
+        <div class="metric-value">${e1.qty}</div>
+        <div class="metric-sub">@ ${fmt(e1.price)}</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">Investment (E1)</div>
+        <div class="metric-value" style="font-size:1.15rem">${fmt(e1.investment, 0)}</div>
+        <div class="metric-sub">${((e1.investment / capital) * 100).toFixed(1)}% of capital</div>
+      </div>
+      <div class="metric danger">
+        <div class="metric-label">Max Loss (E1)</div>
+        <div class="metric-value" style="font-size:1.15rem">${fmt(e1.actualRisk, 0)}</div>
+        <div class="metric-sub">${riskPct}% of capital</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">SL Distance</div>
+        <div class="metric-value" style="font-size:1.15rem">${e1.slPct.toFixed(2)}%</div>
+        <div class="metric-sub">${fmt(e1.slDist)} per share</div>
+      </div>
+    `;
+
+    if (e2) {
+      metricsHTML += `
+        <div class="metric highlight">
+          <div class="metric-label">Add-on Qty</div>
+          <div class="metric-value">${e2.qty}</div>
+          <div class="metric-sub">@ ${fmt(e2.price)}</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Investment (E2)</div>
+          <div class="metric-value" style="font-size:1.15rem">${fmt(e2.investment, 0)}</div>
+          <div class="metric-sub">${((e2.investment / capital) * 100).toFixed(1)}% of capital</div>
+        </div>
+        <div class="metric danger">
+          <div class="metric-label">Max Loss (E2)</div>
+          <div class="metric-value" style="font-size:1.15rem">${fmt(e2.actualRisk, 0)}</div>
+          <div class="metric-sub">if SL hit from dip</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Total Invested</div>
+          <div class="metric-value" style="font-size:1.15rem">${fmt(e1.investment + e2.investment, 0)}</div>
+          <div class="metric-sub">${(((e1.investment + e2.investment) / capital) * 100).toFixed(1)}% of capital</div>
+        </div>
+      `;
+    }
+
+    document.getElementById('metricsGrid').innerHTML = metricsHTML;
+
+    // Breakdown rows
+    let rows = `
+      <div class="breakdown-row"><span class="key">Your Capital</span><span class="val gold">${fmt(capital, 0)}</span></div>
+      <div class="breakdown-row"><span class="key">Risk % Per Trade</span><span class="val">${riskPct}%</span></div>
+      <div class="breakdown-row"><span class="key">Max Risk Amount</span><span class="val red">${fmt(riskAmount, 0)}</span></div>
+      <div class="breakdown-row"><span class="key">CMP (Entry 1)</span><span class="val">${fmt(e1.price)}</span></div>
+      <div class="breakdown-row"><span class="key">Stop Loss Price</span><span class="val red">${fmt(sl)}</span></div>
+      <div class="breakdown-row"><span class="key">SL Distance (E1)</span><span class="val">${fmt(e1.slDist)} / ${e1.slPct.toFixed(2)}%</span></div>
+      <div class="breakdown-row"><span class="key">Quantity to Buy (E1)</span><span class="val green">${e1.qty} shares</span></div>
+    `;
+
+    if (e2) {
+      rows += `
+        <div class="breakdown-row"><span class="key">Add-on / Dip Price</span><span class="val">${fmt(e2.price)}</span></div>
+        <div class="breakdown-row"><span class="key">SL Distance (E2)</span><span class="val">${fmt(e2.slDist)} / ${e2.slPct.toFixed(2)}%</span></div>
+        <div class="breakdown-row"><span class="key">Quantity to Buy (E2)</span><span class="val green">${e2.qty} shares</span></div>
+      `;
+    }
+
+    document.getElementById('breakdownRows').innerHTML = rows;
+
+    // Risk bar
+    const barPct = Math.min((riskPct / 3) * 100, 100);
+    const fill = document.getElementById('riskBarFill');
+    fill.style.width = barPct + '%';
+    fill.className = 'risk-bar-fill' + (riskPct > 2 ? ' over' : '');
+
+    // Warnings
+    const warnings = [];
+    if (riskPct > 2) warnings.push('⚠ Risk > 2% per trade is considered high. Experienced traders typically risk 1% or less.');
+    if (e1.investment > capital * 0.5) warnings.push('⚠ Entry 1 uses more than 50% of your capital. Consider a smaller position.');
+    if (e1.qty === 0) warnings.push('⚠ Quantity is 0 — your stop loss is too tight or capital is too low for this setup.');
+
+    const wb = document.getElementById('warningBox');
+    if (warnings.length > 0) {
+      wb.innerHTML = warnings.join('<br><br>');
+      wb.classList.add('visible');
+    } else {
+      wb.classList.remove('visible');
+    }
+
+    document.getElementById('results').classList.add('visible');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function reset() {
+    ['capital', 'cmp', 'dip', 'sl', 'customRisk'].forEach(id => {
+      document.getElementById(id).value = '';
+    });
+    document.getElementById('riskPercent').value = '1';
+    document.getElementById('customRiskField').style.display = 'none';
+    document.getElementById('results').classList.remove('visible');
+  }
+</script>
+
+</body>
+</html>
